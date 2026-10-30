@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Two agent-research projects side by side. In one, failures arrive with their reasons attached. In the other, every reason must be manufactured. The difference isn't the agent — it's whether the environment can prove it wrong.">
+  <meta name="description" content="Two agent-research projects side by side. In one, failures arrive with their reasons attached. In the other, every reason must be manufactured. Can wrongness be made visible in a domain without ground truth?">
   <meta name="theme-color" content="#f8f6f1">
   <title>How Do You Know Your Agent Is Wrong?</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
@@ -41,9 +41,8 @@
 
     <section id="validity">
       <h2>Numbers don't carry their own validity</h2>
-      <p>Once I saw this, I found its consequences everywhere in the compiler project's first milestone.</p>
-      <p>A schedule had been timed and showed a win. The timing run had no idea the schedule was numerically wrong — correctness lived in a <em>different command</em>, and the intersection was checked by nobody. The win looked exactly like a real win until the project's protected exam ran the two checks in one place and stopped itself:</p>
-      <blockquote><p>"The protected exam stopped immediately at Axis 0: <code>mp3_selected</code> passes <code>truthmill::verify</code> but fails the numerical oracle at <code>(3,5)</code> with worst relative error 1.985. No exam timings were run, so there are no new performance claims."</p></blockquote>
+      <p>Once I saw this, I found its consequences everywhere in the compiler project's records.</p>
+      <p>A schedule had been timed and showed a win. The timing run had no idea the schedule was numerically wrong — correctness lived in a <em>different command</em>, and the intersection was checked by nobody. The win looked exactly like a real win.</p>
       <p>The same baseline was measured in two honest, protocol-compliant sessions: 58.7 ms and 67.9 ms. Fifteen percent apart, nothing flagged it, and two downstream conclusions silently depended on which number was right. There was no way to adjudicate — there is no ground truth for wall time, only measurements of it.</p>
       <p>And a headline comparison rested on measurements with too-few iterations and a 3.4× spread between repeats of the <em>same candidate</em> — visible right there in the file, for weeks. Nobody was assigned to look.</p>
       <p>In the STM project, a wrong answer came with its location and size. In the compiler project, wrongness lived at <em>intersections</em> — timing ∩ correctness, session ∩ session, claim ∩ fine print — and intersections only get checked when someone with judgment decides to look.</p>
@@ -56,44 +55,19 @@
       <p><strong>Diagnosable.</strong> A stack trace says <em>where</em>. A bare "test failed" does not. This is the difference between a per-fixture residual and a single wall-time scalar — between getting the "why" with the failure and manufacturing it yourself, one "perhaps" at a time.</p>
       <p><strong>Expensive to ignore.</strong> A compiler warning gets ignored; a compiler error blocks the build. This is the property people underestimate. Disclosure without enforcement is a warning, and warnings get ignored. In the STM project, the scoring priced a confident wrong answer at ten times a refusal. As that agent put it: <em>a refusal is a delay; a lie is fake science.</em></p>
       <p><strong>Remembered.</strong> A bug fixed without a postmortem recurs. An agent session that ends forgets. The STM project froze every failure into a permanent regression test; the compiler project re-derived the same lessons across context resets.</p>
-      <p>The STM project got all four from its environment, for free, because ground truth was available. The compiler project had no ground truth. So for its new regime, we built the four properties by hand.</p>
-    </section>
-
-    <section id="constitution">
-      <h2>The constitution</h2>
-      <p>The workflow lives in six small, versioned files in the repo: a protocol (how work happens), a spec (what counts as success, with the exact commands that measure it), a failure registry (mechanism verified <em>before</em> the fix, fixture pinned first), an idea ledger (every research idea carries its own kill condition, written before the experiment), an append-only trial log, and a compressed research summary. The system prompt shrank to six lines: read these files, work autonomously, stop only at milestones or blockers. If the prompt and the files disagree, the files win.</p>
-      <p>Two pieces came straight from the comparison above.</p>
-      <p>The <strong>protected exam</strong>: a benchmark suite that runs once per milestone, reported as-is, never iterated against — the thing that stopped itself at the correctness gate instead of reporting timings.</p>
-      <p>And the <strong>critic</strong>: at each milestone boundary, a fresh-context agent — one that did no work and owes the work nothing — reads the ledgers and must file challenges. The milestone cannot close until every challenge is answered. Its brief ends with: <em>do not suggest improvements; identify where the evidence does not support the claims.</em></p>
-    </section>
-
-    <section id="test">
-      <h2>The first test</h2>
-      <p>The compiler project's first milestone under this regime was not a success story. That is why I trust it.</p>
-      <p>Mid-milestone, the agent retired a research idea — a lookahead search — on what looked like clean evidence. The critic checked the controls and found the main CCSD definition had been silently skipped: the "clean evidence" compiled in 0.11 seconds precisely because it never touched the hard part. The retirement was invalid. The agent's response:</p>
-      <blockquote><p>"The critic's F-010 challenge is valid: the CCSD 'unsplit' runs skipped the 63-term doubles definition. I'm reopening I-005 rather than defending the retirement."</p></blockquote>
-      <p>In my <a href="https://br0kensmi1e.github.io/system-prompt/">last post</a>, the open problem was: how do you get an agent to question its chosen approach, not just polish it? Here is one answer. You don't wait for it to feel doubt. You install a critic whose challenges block progress, and you watch the questioning happen on schedule.</p>
-      <p>Over one milestone, the failure registry grew from 7 entries to 25. Three preliminary claims were retracted before I ever read them. The exam falsified an assumption I had written into the spec myself — I had declared FLOP quality guaranteed "by construction"; the gate failed on all six problems. The workflow caught its own constitution being wrong.</p>
-      <p>And the honest costs. The mistakes still <em>happened</em> — invalid controls, tests run on uncommitted code, an exam first run at the wrong sizes. The machinery caught them; it did not prevent them. Much of the milestone's effort went to evidence repair rather than compiler progress. The compiler still loses to its baseline. And the critic is launched by the agent it criticizes — teeth, yes; independence, not yet.</p>
-    </section>
-
-    <section id="role">
-      <h2>What I do now</h2>
-      <p>The last post ended with a complaint: the research was still my job. This project taught me what my job actually became.</p>
-      <p>I did not direct the work. I amended the rules. Every intervention I made was constitutional: "don't pin durations, use events." "The baseline is a baseline, not a component of our identity." "Each baseline keeps its own backend." "Failures generate ideas — link them." Those four sentences did more for the project than any line of code in it.</p>
-      <p>I think that's the real answer to "how do you get past <em>make this idea work</em>?" You stop trying to make the agent curious and start making wrongness expensive — then let the agent's competence, which was never the bottleneck, do the rest.</p>
-      <p>Still open: whether a critic launched by the criticized can be trusted with negative results, not just positive ones. Whether the machinery atrophies into ceremony once there's little left to catch. And whether a ledger full of honest failures converts, eventually, into a compiler that wins. The next milestone is the test.</p>
-      <p class="closing">You are not your agent's reviewer. You are its error-handling runtime. Build accordingly.</p>
+      <p>The STM project got all four from its environment, for free, because ground truth was available. The compiler project has no ground truth. So the question becomes: can these four properties be built by hand, into an environment that doesn't provide them?</p>
+      <p>I don't know. We're trying — the current attempt moves the workflow into versioned files, installs a run-once exam and a critic whose challenges block progress, and prices confident wrong answers above honest refusals. It's too early to say whether it works. What I can say is that the attempt has already changed what I watch: less the agent's outputs, more whether its failures arrive with their coordinates attached.</p>
+      <p class="closing">My last post ended by asking how to get an agent to question its chosen approach. I suspect this is the same question in disguise. An agent questions its conclusions exactly when wrongness is detectable, diagnosable, expensive, and remembered — and not before. Making that true, in domains without ground truth, is the problem we're working on now.</p>
     </section>
 
     <section class="materials" id="materials">
       <h2>Background</h2>
       <ul class="material-links">
-        <li><a href="https://br0kensmi1e.github.io/system-prompt/">The previous post, whose open problem this one answers</a></li>
+        <li><a href="https://br0kensmi1e.github.io/system-prompt/">The previous post, whose open problem this one revisits</a></li>
         <li><a href="https://trinkle23897.github.io/learning-beyond-gradients/">Jiayi Weng, <em>Learning Beyond Gradients</em> — the heuristic-learning framing both projects used</a></li>
         <li><a href="https://github.com/Br0kenSmi1e/agent-wrongness">This blog's source and revision history</a></li>
       </ul>
-      <p class="editorial-note">Written with AI assistance from the original conversations and saved session records. Quotes are verbatim from session logs; <code>[…]</code> marks omissions. The compiler project is unfinished and currently loses to its baseline. The raw sessions, credentials, and private repositories are not published.</p>
+      <p class="editorial-note">Written with AI assistance from the original conversations and saved session records. Quotes are verbatim from session logs; <code>[…]</code> marks omissions. The compiler project is unfinished. The raw sessions, credentials, and private repositories are not published.</p>
     </section>
     <footer><a href="#top">Back to top</a></footer>
   </main>

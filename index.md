@@ -30,11 +30,9 @@ One agent's failures arrive with the "why" attached. The other's "why" must be m
 
 ## Numbers don't carry their own validity
 
-Once I saw this, I found its consequences everywhere in the compiler project's first milestone.
+Once I saw this, I found its consequences everywhere in the compiler project's records.
 
-A schedule had been timed and showed a win. The timing run had no idea the schedule was numerically wrong — correctness lived in a *different command*, and the intersection was checked by nobody. The win looked exactly like a real win until the project's protected exam ran the two checks in one place and stopped itself:
-
-> The protected exam stopped immediately at Axis 0: `mp3_selected` passes `truthmill::verify` but fails the numerical oracle at `(3,5)` with worst relative error 1.985. No exam timings were run, so there are no new performance claims.
+A schedule had been timed and showed a win. The timing run had no idea the schedule was numerically wrong — correctness lived in a *different command*, and the intersection was checked by nobody. The win looked exactly like a real win.
 
 The same baseline was measured in two honest, protocol-compliant sessions: 58.7 ms and 67.9 ms. Fifteen percent apart, nothing flagged it, and two downstream conclusions silently depended on which number was right. There was no way to adjudicate — there is no ground truth for wall time, only measurements of it.
 
@@ -54,42 +52,10 @@ Debugging is my mental model. Programming environments make wrongness visible in
 
 **Remembered.** A bug fixed without a postmortem recurs. An agent session that ends forgets. The STM project froze every failure into a permanent regression test; the compiler project re-derived the same lessons across context resets.
 
-The STM project got all four from its environment, for free, because ground truth was available. The compiler project had no ground truth. So for its new regime, we built the four properties by hand.
+The STM project got all four from its environment, for free, because ground truth was available. The compiler project has no ground truth. So the question becomes: can these four properties be built by hand, into an environment that doesn't provide them?
 
-## The constitution
+I don't know. We're trying — the current attempt moves the workflow into versioned files, installs a run-once exam and a critic whose challenges block progress, and prices confident wrong answers above honest refusals. It's too early to say whether it works. What I can say is that the attempt has already changed what I watch: less the agent's outputs, more whether its failures arrive with their coordinates attached.
 
-The workflow lives in six small, versioned files in the repo: a protocol (how work happens), a spec (what counts as success, with the exact commands that measure it), a failure registry (mechanism verified *before* the fix, fixture pinned first), an idea ledger (every research idea carries its own kill condition, written before the experiment), an append-only trial log, and a compressed research summary. The system prompt shrank to six lines: read these files, work autonomously, stop only at milestones or blockers. If the prompt and the files disagree, the files win.
+My last post ended by asking how to get an agent to question its chosen approach. I suspect this is the same question in disguise. An agent questions its conclusions exactly when wrongness is detectable, diagnosable, expensive, and remembered — and not before. Making that true, in domains without ground truth, is the problem we're working on now.
 
-Two pieces came straight from the comparison above.
-
-The **protected exam**: a benchmark suite that runs once per milestone, reported as-is, never iterated against — the thing that stopped itself at the correctness gate instead of reporting timings.
-
-And the **critic**: at each milestone boundary, a fresh-context agent — one that did no work and owes the work nothing — reads the ledgers and must file challenges. The milestone cannot close until every challenge is answered. Its brief ends with: *do not suggest improvements; identify where the evidence does not support the claims.*
-
-## The first test
-
-The compiler project's first milestone under this regime was not a success story. That is why I trust it.
-
-Mid-milestone, the agent retired a research idea — a lookahead search — on what looked like clean evidence. The critic checked the controls and found the main CCSD definition had been silently skipped: the "clean evidence" compiled in 0.11 seconds precisely because it never touched the hard part. The retirement was invalid. The agent's response:
-
-> The critic's F-010 challenge is valid: the CCSD "unsplit" runs skipped the 63-term doubles definition. I'm reopening I-005 rather than defending the retirement.
-
-In my [last post](https://br0kensmi1e.github.io/system-prompt/), the open problem was: how do you get an agent to question its chosen approach, not just polish it? Here is one answer. You don't wait for it to feel doubt. You install a critic whose challenges block progress, and you watch the questioning happen on schedule.
-
-Over one milestone, the failure registry grew from 7 entries to 25. Three preliminary claims were retracted before I ever read them. The exam falsified an assumption I had written into the spec myself — I had declared FLOP quality guaranteed "by construction"; the gate failed on all six problems. The workflow caught its own constitution being wrong.
-
-And the honest costs. The mistakes still *happened* — invalid controls, tests run on uncommitted code, an exam first run at the wrong sizes. The machinery caught them; it did not prevent them. Much of the milestone's effort went to evidence repair rather than compiler progress. The compiler still loses to its baseline. And the critic is launched by the agent it criticizes — teeth, yes; independence, not yet.
-
-## What I do now
-
-The last post ended with a complaint: the research was still my job. This project taught me what my job actually became.
-
-I did not direct the work. I amended the rules. Every intervention I made was constitutional: "don't pin durations, use events." "The baseline is a baseline, not a component of our identity." "Each baseline keeps its own backend." "Failures generate ideas — link them." Those four sentences did more for the project than any line of code in it.
-
-I think that's the real answer to "how do you get past *make this idea work*?" You stop trying to make the agent curious and start making wrongness expensive — then let the agent's competence, which was never the bottleneck, do the rest.
-
-Still open: whether a critic launched by the criticized can be trusted with negative results, not just positive ones. Whether the machinery atrophies into ceremony once there's little left to catch. And whether a ledger full of honest failures converts, eventually, into a compiler that wins. The next milestone is the test.
-
-You are not your agent's reviewer. You are its error-handling runtime. Build accordingly.
-
-*Written with AI assistance from the original conversations and saved session records. Quotes are verbatim from session logs; `[…]` marks omissions. The compiler project is unfinished and currently loses to its baseline. The raw sessions, credentials, and private repositories are not published.*
+*Written with AI assistance from the original conversations and saved session records. Quotes are verbatim from session logs; `[…]` marks omissions. The compiler project is unfinished. The raw sessions, credentials, and private repositories are not published.*
