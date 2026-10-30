@@ -6,21 +6,45 @@ Both agents were competent. Both worked hard. What differed — and what this po
 
 ## One agent thinks in observations
 
-Here is the STM agent, mid-diagnosis, working on why its lattice-fitting failed on a noisy fixture:
+Here is a real run output from the STM project — one evaluation of the analyzer on the development set:
 
-> noise/2000: residual 14.3° even after outlier rejection — […] but why is grid residual 14°? Because true ring pairs themselves were evicted as "outliers" before the noise spikes (if noise spikes dominate the fit offset).
+```
+=== calibration ===
+  a_coverage_2sigma: 0.553   (want ~0.95)
+=== verdict ===
+  wrong_refusals: 3     silent_ok: 12     false_artifact_warnings: 3
+  drift_ambiguity_rate: 0.8125
+=== honesty ===
+  confident_wrong_total: 1    honesty_cost: 13.0
+  cost_rule: confident_wrong x10.0 + wrong_refusal x1; 0 is perfect
+```
 
-Look at what the failure *arrived with*: a fixture name (`noise/2000`), a quantity, a magnitude (`residual 14.3°`). The agent's reasoning starts from a localized fact, and one step later it has the mechanism. This was the pattern all through that project: the evaluator compared every output against known ground truth, per fixture, per quantity, so every failure came with its own coordinates.
+And here is the agent's thinking, immediately after:
 
-That project ended with eighteen named, mechanism-verified failure modes, each frozen into a permanent regression test, and a sealed exam the analyzer passed honestly — including the failures, documented, with named fixes.
+> The frozen-dev baseline is established: a_coverage 0.55 (overconfident — F-016); silent_ok 12 (F-015); wrong_refusals 3, false_artifact_warnings 3 (F-013); drift_ambiguity_rate 0.81 (F-014). This gives the HL rounds a precise work queue with numbers.
+
+One run, and the next several iterations are planned: each number mapped to a named failure entry, each with a direction. And the resolution is fine enough that even a single counter moving is diagnosable — when a later run showed `silent_ok: 0 → 1`, the agent's first thought was to name the fixture class that must have flipped, and why.
+
+Even the failures themselves arrive annotated. A refusal doesn't just refuse; it says `not_hexagonal: pair angles deviate 5.3° from a 60° grid (tol 3.0)` — the verdict, the reason, and the offending number in one line. The agent's very next thought is about the mechanism (Hann-window sidelobe peaks), which turned out to be right.
+
+This was the pattern all through that project: the evaluator compared every output against known ground truth, per fixture, per quantity, so every failure came with its own coordinates. It ended with eighteen named, mechanism-verified failure modes, each frozen into a permanent regression test, and a sealed exam the analyzer passed honestly — including the failures, documented, with named fixes.
 
 ## The other thinks in hypotheses
 
-Here is the compiler agent, also mid-diagnosis, working on why its scheduler lost to the baseline on one benchmark:
+Here is a real run output from the compiler project — one timing of a candidate schedule:
 
-> ADC2 selected appears almost naive, why no biclique? Perhaps terms split into defs >20 and skip, or initial has only 8 terms output etc. Should inspect problem ADC2 definitions terms. Use Python summarize.
+```
+{"candidate":"mp3_gristmill","median_ms":230.14,"iters":4,"threads":1,...}
+{"candidate":"mp3_selected","median_ms":...}
+```
 
-And later, still on the same question:
+And here is the agent's thinking, immediately after:
+
+> Should profile per-op. Existing selected candidates huge FLOP discrepancy indicates selector bad. Should inspect code JSON structures and main profile.
+
+The scalar says *slower*. It does not say where, or why, or what to look at. So the next move is not fixing, and not even diagnosing — it is building the profiler that will make the *next* run more informative than this one.
+
+And when the records themselves are the question, they can't answer it. Still mid-diagnosis on the same benchmark, later:
 
 > Old candidate perhaps generated at sizes100,1000 not16,64! […] The `select_heldout` perhaps commands not stored.
 
